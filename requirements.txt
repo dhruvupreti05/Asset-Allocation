@@ -1,0 +1,8 @@
+numpy
+pandas
+networkx
+yfinance
+matplotlib
+tqdm
+dimod
+dwave-ocean-sdk
