@@ -170,18 +170,28 @@ def binary_to_float(bits, split):
     return decimals
 
 if __name__ == "__main__":
-    assets = ["AAPL", "MSFT", "GOOGL", "AMZN", "FB", "TSLA", "NVDA", "JPM", "V", "JNJ",
-            "WMT", "PG", "MA", "DIS", "HD", "BAC", "VZ", "ADBE", "CMCSA", "NFLX"]
+    assets = ["AAPL", "MSFT", "GOOGL", "AMZN", "META", "TSLA", "NVDA", "JPM", "V", "JNJ",
+              "WMT", "PG", "MA", "DIS", "HD", "BAC", "VZ", "ADBE", "CMCSA", "NFLX"]
 
     closing_prices = yf.download(assets, start="2020-01-01")["Close"]
-    daily_returns = closing_prices.pct_change().dropna()
+
+    daily_returns = np.log(closing_prices / closing_prices.shift(1)).dropna()
 
     covariance_matrix = daily_returns.cov().copy()
-    #covariance_matrix.iloc[np.diag_indices_from(covariance_matrix)] = 0
-
     returns = daily_returns.mean() * 252
 
-    Graph = nx.from_numpy_array(covariance_matrix.to_numpy())
+    correlation_matrix = daily_returns.corr(method="pearson")
+
+    correlation_matrix = (correlation_matrix + correlation_matrix.T) / 2
+    np.fill_diagonal(correlation_matrix.values, 1.0)
+
+    distance_matrix = np.sqrt(2.0 * (1.0 - correlation_matrix))
+    np.fill_diagonal(distance_matrix.values, 0.0)
+
+    full_graph = nx.from_pandas_adjacency(distance_matrix)
+
+    Graph = nx.minimum_spanning_tree(full_graph, weight="weight")
+
     draw_graph(Graph=Graph, name=".graph.png", showEdgeWeights=True)
 
     B, _, _, _ = modularity_matrix(G=Graph)
@@ -200,45 +210,47 @@ if __name__ == "__main__":
     draw_graph(Graph=Graph, name=".graph_with_communities.png", labels=communities, showEdgeWeights=True)
 
     group_average_returns = {}
-    group_daily_returns = np.zeros((len(daily_returns), num_partitions))
+    group_daily_returns = np.zeros((len(daily_returns), len(partitions)))
 
     for group_index, asset_group in enumerate(partitions):
         asset_group = list(asset_group)
 
-        average_asset_returns = [returns.iloc[asset] for asset in asset_group]
+        average_asset_returns = [returns.loc[asset] for asset in asset_group]
         group_average_returns[group_index] = np.mean(average_asset_returns)
 
-        mean_daily_return_series = daily_returns.iloc[:, asset_group].mean(axis=1)
+        mean_daily_return_series = daily_returns[asset_group].mean(axis=1)
         group_daily_returns[:, group_index] = mean_daily_return_series.to_numpy()
 
     partition_covariance_matrix = np.cov(group_daily_returns, rowvar=False)
 
-    Q_upper = build_aa_qubo(n=num_partitions, mu=group_average_returns, C=partition_covariance_matrix)
+    Q_upper = build_aa_qubo(n=len(partitions), mu=group_average_returns, C=partition_covariance_matrix)
     best_sample_upper, _, _ = solve_qubo(Q=Q_upper)
 
-    upper_allocations = binary_to_float(bits=best_sample_upper, split=num_partitions)
+    upper_allocations = binary_to_float(bits=best_sample_upper, split=len(partitions))
 
     lower_allocations = []
 
     for i, cluster in enumerate(partitions):
         cluster = list(cluster)
 
-        cluster_returns = [returns.iloc[asset] for asset in cluster]
-        cluster_covariance = covariance_matrix.iloc[cluster, cluster].to_numpy()
+        cluster_returns = [returns.loc[asset] for asset in cluster]
+        cluster_covariance = covariance_matrix.loc[cluster, cluster].to_numpy()
 
-        cluster_qubo = build_aa_qubo(
-            n=len(cluster),
-            mu=cluster_returns,
-            C=cluster_covariance
-        )
+        cluster_qubo = build_aa_qubo(n=len(cluster), mu=cluster_returns, C=cluster_covariance)
 
         best_sample_lower, _, _ = solve_qubo(Q=cluster_qubo)
         lower_allocations.append(binary_to_float(bits=best_sample_lower, split=len(cluster)))
 
-    allocations = np.array([x * y for x, group in zip(upper_allocations, lower_allocations) for y in group])
-    allocations /= sum(allocations)
-    for asset, allocation in zip(assets, allocations):
-        print(f"{asset}: {allocation}")
+    allocations = np.array([
+        x * y
+        for x, group in zip(upper_allocations, lower_allocations)
+        for y in group
+    ])
 
+    allocations /= allocations.sum()
+
+    ordered_assets = [asset for cluster in partitions for asset in cluster]
+    for asset, allocation in zip(ordered_assets, allocations):
+        print(f"{asset}: {allocation}")
 
 
