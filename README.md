@@ -8,6 +8,8 @@ Quantum annealing, implemented by hardware such as D-Wave's quantum processors, 
 
 This project combines both of these ideas into a two-level hierarchical portfolio allocation framework. Using historical return data from 20 publicly traded stocks downloaded via Yahoo Finance, we first construct a covariance graph representing how asset returns move together. We then apply a quantum annealing-based community detection algorithm — formulated using the modularity matrix — to partition the 20 stocks into four communities of correlated assets. Within each community, we apply a second QUBO-based optimization to determine individual asset allocations. Our research investigates whether this hierarchical quantum approach can produce meaningful portfolio allocations, and examines practical challenges that arise when encoding financial constraints, such as the normalization requirement, into QUBO formulations.
 
+<img width="723" height="623" alt="Screenshot 2026-04-28 at 3 06 36 PM" src="https://github.com/user-attachments/assets/5b74a187-38ff-46fd-a12d-75881bf23afc" />
+
 ## Set-Up:
 
 First pull the repo in some directory you are conformatble working in.
@@ -20,5 +22,5 @@ Following that make sure to change the permissions of the setup file, `chmod +x 
 
 ## References:
 
-This work was supported by the collaborative efforts of [Bhavya Lakhina](blakhina@purdue.edu), [Esha Sury](esury@purdue.edu), [Dhruv Upreti](dupreti@purdue.edu) and [Shashank Boopathi](boopathi@purdue.edu). 
+This work was supported by the collaborative efforts of Bhavya Lakhina, Esha Sury, Dhruv Upreti and Shashank Boopathi; mentorship was given through Kale Stahl and Bridget Kaufman.
 
