@@ -1,5 +1,6 @@
 # Purdue Experimental Math Lab: Kaufmann Group
 
+import os
 import numpy as np
 import pandas as pd
 import networkx as nx
@@ -7,6 +8,7 @@ import yfinance as yf
 import matplotlib.pyplot as plt
 
 from tqdm import tqdm
+from dotenv import load_dotenv
 from matplotlib import colormaps
 
 import dimod
@@ -14,10 +16,12 @@ from dwave.cloud import Client
 from dwave.system.samplers import DWaveSampler
 from dwave.system.composites import EmbeddingComposite
 
-endpoint = "https://cloud.dwavesys.com/sapi"
-token = "ttYi-e51121f5f637eda79b9c88daffa50c66b7f08d10"
+load_dotenv()
 
-client = Client.from_config(token="ttYi-e51121f5f637eda79b9c88daffa50c66b7f08d10")
+endpoint = "https://cloud.dwavesys.com/sapi"
+token = os.getenv("API_TOKEN")
+
+client = Client.from_config(token=token)
 solver = "Advantage_system4.1"
 
 num_partitions = 3
@@ -168,6 +172,12 @@ def binary_to_float(bits, split):
         decimals.append(value)
 
     return decimals
+
+def getReturns(allocations, returns):
+    return np.dot(returns, allocations)
+
+def getRisk(covariance, allocations):
+    return np.transpose(allocations) @ covariance @ allocations
 
 if __name__ == "__main__":
     assets = ["AAPL", "MSFT", "GOOGL", "AMZN", "FB", "TSLA", "NVDA", "JPM", "V", "JNJ",

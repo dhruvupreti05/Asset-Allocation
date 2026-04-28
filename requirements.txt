@@ -6,3 +6,4 @@ matplotlib
 tqdm
 dimod
 dwave-ocean-sdk
+python-dotenv
