@@ -17,17 +17,6 @@ num_partitions = 3
 gamma=8.0
 beta=1.0
 
-"""
-Returns
-"""
-def getReturns(allocations, returns):
-    return np.dot(returns, allocations)
-
-"""
-Risk
-"""
-def getRisk(covariance, allocations):
-    return np.transpose(allocations) @ covariance @ allocations
 
 if __name__ == "__main__":
     with open('assets.txt', 'r') as file:
@@ -36,9 +25,7 @@ if __name__ == "__main__":
         daily_returns = closing_prices(assets=assets, start="2020-01-01")
         returns = daily_returns.mean() * 252
 
-        covariance_matrix = daily_returns.cov().copy()
-        np.fill_diagonal(covariance_matrix.values, 0)
-
+        covariance_matrix = get_covarience(daily_returns=daily_returns)
     
         Graph = nx.from_numpy_array(covariance_matrix.to_numpy())
         draw_graph(Graph=Graph, name=".graph.png")
