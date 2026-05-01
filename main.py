@@ -17,7 +17,6 @@ num_partitions = 3
 gamma=8.0
 beta=1.0
 
-
 if __name__ == "__main__":
     with open('assets.txt', 'r') as file:
         assets = [line.strip() for line in file]
