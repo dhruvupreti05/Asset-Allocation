@@ -29,11 +29,8 @@ if __name__ == "__main__":
         Graph = nx.from_numpy_array(covariance_matrix.to_numpy())
         draw_graph(Graph=Graph, name=".graph.png")
 
-        B, _, _, _ = modularity_matrix(G=Graph)
-        Q_communities = build_community_detection_qubo(B, k=num_partitions, gamma=gamma, beta=beta)
-        best_sample_communities, _, _ = solve_qubo(Q=Q_communities, token=token, num_repeats=1)
-
-        communities = decode_one_hot(n=len(assets), k=num_partitions, x=best_sample_communities)
+        community_detection = CommunityDetection(adjacency_matrix=covariance_matrix, k=num_partitions)
+        communities = community_detection.run(token=token)
 
         comms = {}
         nodes = list(Graph.nodes())
@@ -50,18 +47,13 @@ if __name__ == "__main__":
         for group_index, asset_group in enumerate(partitions):
             asset_group = list(asset_group)
 
-            average_asset_returns = [returns.iloc[asset] for asset in asset_group]
-            group_average_returns[group_index] = np.mean(average_asset_returns)
-
-            mean_daily_return_series = daily_returns.iloc[:, asset_group].mean(axis=1)
-            group_daily_returns[:, group_index] = mean_daily_return_series.to_numpy()
+            group_average_returns[group_index] = returns.iloc[asset_group].mean()
+            group_daily_returns[:, group_index] = daily_returns.iloc[:, asset_group].mean(axis=1).to_numpy()
 
         partition_covariance_matrix = np.cov(group_daily_returns, rowvar=False)
 
-        Q_upper = build_aa_qubo(n=num_partitions, mu=group_average_returns, C=partition_covariance_matrix)
-        best_sample_upper, _, _ = solve_qubo(Q=Q_upper, token=token)
-
-        upper_allocations = binary_to_float(bits=best_sample_upper, split=num_partitions)
+        upper_allocation = AssetAllocation(returns=list(group_average_returns.values()), covariance=partition_covariance_matrix)
+        upper_allocations = upper_allocation.run(token=token)
 
         lower_allocations = []
 
@@ -71,17 +63,10 @@ if __name__ == "__main__":
             cluster_returns = [returns.iloc[asset] for asset in cluster]
             cluster_covariance = covariance_matrix.iloc[cluster, cluster].to_numpy()
 
-            cluster_qubo = build_aa_qubo(
-                n=len(cluster),
-                mu=cluster_returns,
-                C=cluster_covariance
-            )
-
-            best_sample_lower, _, _ = solve_qubo(Q=cluster_qubo, token=token)
-            lower_allocations.append(binary_to_float(bits=best_sample_lower, split=len(cluster)))
-
+            inner_allocation = AssetAllocation(returns=cluster_returns, covariance=cluster_covariance)
+            lower_allocations.append(inner_allocation.run(token=token))
+    
         allocations = np.array([x * y for x, group in zip(upper_allocations, lower_allocations) for y in group])
-        allocations /= sum(allocations)
         for asset, allocation in zip(assets, allocations):
             print(f"{asset}: {allocation}")
 
