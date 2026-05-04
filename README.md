@@ -22,5 +22,5 @@ Following that make sure to change the permissions of the setup file, `chmod +x 
 
 ## References:
 
-This work was supported by the collaborative efforts of Bhavya Lakhina, Esha Sury, Dhruv Upreti and Shashank Boopathi; mentorship was given through Kale Stahl and Bridget Kaufman.
+This work was supported by the collaborative efforts of Bhavya Lakhina, Esha Sury, Dhruv Upreti and Shashank Boopathi; mentorship was given by Kale Stahl and Birgit Kaufmann.
 
