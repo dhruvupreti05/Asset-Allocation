@@ -22,5 +22,5 @@ Note that the setup file works only for Unix machines, windowsOS users must crea
 
 ## References:
 
-This work was supported by the collaborative efforts of Bhavya Lakhina, Esha Sury, Dhruv Upreti and Shashank Boopathi; mentorship was given by Kale Stahl and Birgit Kaufmann.
+This work was created by the collaborative efforts of Bhavya Lakhina, Esha Sury, Dhruv Upreti and Shashank Boopathi; mentorship was given by Kale Stahl and Birgit Kaufmann. Funding was given through D-wave. 
 
