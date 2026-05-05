@@ -18,9 +18,9 @@ First pull the repo in some directory you are conformatble working in.
 git clone https://github.com/dhruvupreti05/Asset-Allocation.git
 ```
 
-Following that make sure to change the permissions of the setup file, `chmod +x setup.sh` first then run the setup which will create a virtual environment `./setup.sh`. After that, whenever you want to use the project, activate the virtual environment by running `source ocean/bin/activate` to activate the virtual environment.
+Note that the setup file works only for Unix machines, windowsOS users must create a virtual environment and install the libraries in `requirements.txt`. For Unix machines change the permissions of the setup file via `chmod +x setup.sh` first then run the setup, `./setup.sh` which will create a virtual environment and install the packages. After that, whenever you want to use the project, activate the virtual environment by running `source ocean/bin/activate` to activate the virtual environment.
 
 ## References:
 
-This work was supported by the collaborative efforts of Bhavya Lakhina, Esha Sury, Dhruv Upreti and Shashank Boopathi; mentorship was given through Kale Stahl and Bridget Kaufman.
+This work was created by the collaborative efforts of Bhavya Lakhina, Esha Sury, Dhruv Upreti and Shashank Boopathi; mentorship was given by Kale Stahl and Birgit Kaufmann. Funding was given through D-wave. 
 
